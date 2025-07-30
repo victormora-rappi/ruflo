@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { Play, Pause, RefreshCw, Zap, Copy, Check, ChevronDown, BookOpen, Code, FileText, Layers, Search, Filter, X } from 'lucide-react'
-import SwarmVisualizer from './SwarmVisualizer'
-import SwarmVisualizerInline from './SwarmVisualizerInline'
+// import SwarmVisualizer from './SwarmVisualizer'
+// import SwarmVisualizerInline from './SwarmVisualizerInline'
 import useRealTimeStore from '../../stores/realTimeStore'
 
 interface StreamEvent {
@@ -1475,11 +1475,10 @@ const ClaudeFlow: React.FC<ClaudeFlowProps> = ({
               )}
             </h3>
             {agents.length > 0 ? (
-              <SwarmVisualizerInline 
-                agents={agents} 
-                currentSwarm={currentSwarm}
-                onOpenFullView={() => setShowSwarmVisualizer(true)}
-              />
+              <div className="text-gray-500 text-sm">
+                {/* SwarmVisualizerInline component temporarily disabled */}
+                <p>Swarm visualization available - {agents.length} agents active</p>
+              </div>
             ) : (
               <div className="text-center py-6">
                 <div className="text-gray-500 text-xs mb-2">🤖 No agents spawned</div>
@@ -1713,26 +1712,11 @@ const ClaudeFlow: React.FC<ClaudeFlowProps> = ({
             
             {/* Visualizer */}
             <div className="flex-1 p-4">
-              <SwarmVisualizer
-                agents={agents}
-                currentSwarm={currentSwarm}
-                onAgentUpdate={(agentId, updates) => {
-                  console.log('Agent update:', agentId, updates)
-                  // Update agent in state
-                  setAgents(prev => prev.map(agent => 
-                    agent.id === agentId ? { ...agent, ...updates } : agent
-                  ))
-                }}
-                onTaskAssign={(taskId, agentId) => {
-                  console.log('Task assign:', taskId, 'to', agentId)
-                  // Handle task assignment
-                }}
-                onTopologyChange={(topology) => {
-                  console.log('Topology change:', topology)
-                  // Update swarm topology
-                  setCurrentSwarm(prev => prev ? { ...prev, topology } : null)
-                }}
-              />
+              {/* SwarmVisualizer component temporarily disabled */}
+              <div className="text-center text-gray-500">
+                <p className="text-lg">Swarm Visualizer Temporarily Unavailable</p>
+                <p className="text-sm mt-2">Swarm: {currentSwarm?.topology} topology with {agents.length} agents</p>
+              </div>
             </div>
           </div>
         </div>
