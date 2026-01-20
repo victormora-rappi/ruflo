@@ -127,7 +127,8 @@ Available MCP tools:
 
 ---
 
-## Core Concepts
+<details>
+<summary><h2>🎯 Core Concepts</h2></summary>
 
 ### Element Refs (`@e1`, `@e2`, etc.)
 
@@ -187,9 +188,12 @@ const piiResult = browser.scanForPII('SSN: 123-45-6789');
 // Returns: { pii: [{type: 'ssn', masked: '***-**-6789', confidence: 0.95}] }
 ```
 
+</details>
+
 ---
 
-## Integrations
+<details>
+<summary><h2>🔌 Integrations</h2></summary>
 
 ### Memory Integration
 
@@ -277,7 +281,7 @@ const validation = manager.validateVariables('login-basic', {
 // { valid: true, errors: [] }
 ```
 
-Available templates:
+#### Available Templates
 
 | Template | Category | Description |
 |----------|----------|-------------|
@@ -322,9 +326,12 @@ const postResult = await postBrowseHook({
 // { patternStored: true, patternId: 'pattern-traj-123', learnedFrom: true }
 ```
 
+</details>
+
 ---
 
-## Swarm Coordination
+<details>
+<summary><h2>🐝 Swarm Coordination</h2></summary>
 
 Coordinate multiple browser sessions for parallel tasks:
 
@@ -368,9 +375,12 @@ await swarm.closeAll();
 | `tester` | Forms, interactions, assertions | E2E testing |
 | `monitor` | Network, console, errors | Performance monitoring |
 
+</details>
+
 ---
 
-## API Reference
+<details>
+<summary><h2>📚 API Reference</h2></summary>
 
 ### BrowserService
 
@@ -477,9 +487,12 @@ class BrowserMemoryManager {
 }
 ```
 
+</details>
+
 ---
 
-## Testing
+<details>
+<summary><h2>🧪 Testing</h2></summary>
 
 ### Unit Tests
 
@@ -519,9 +532,12 @@ docker compose --profile debug up browser-debug
 | ReasoningBankAdapter | 12 | ✅ |
 | **Total** | **128** | ✅ |
 
+</details>
+
 ---
 
-## Configuration
+<details>
+<summary><h2>⚙️ Configuration</h2></summary>
 
 ### TypeScript
 
@@ -554,9 +570,12 @@ BROWSER_ENABLE_MEMORY=true
 BROWSER_MEMORY_NAMESPACE=browser
 ```
 
+</details>
+
 ---
 
-## Examples
+<details>
+<summary><h2>💡 Examples</h2></summary>
 
 ### Login and Extract Data
 
@@ -647,9 +666,12 @@ async function secureAutomation(url: string, formData: Record<string, string>) {
 }
 ```
 
+</details>
+
 ---
 
-## Troubleshooting
+<details>
+<summary><h2>🔧 Troubleshooting</h2></summary>
 
 ### Common Issues
 
@@ -677,6 +699,8 @@ await browser.open('http://trusted-domain.com', { skipSecurityCheck: true });
 // Ensure endTrajectory is called
 const trajectory = await browser.endTrajectory(true); // Must await!
 ```
+
+</details>
 
 ---
 
