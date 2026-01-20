@@ -179,6 +179,25 @@ function getLearningStats() {
 function getV3Progress() {
   const learning = getLearningStats();
 
+  // Check for metrics file first (created by init)
+  const metricsPath = path.join(process.cwd(), '.claude-flow', 'metrics', 'v3-progress.json');
+  if (fs.existsSync(metricsPath)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(metricsPath, 'utf-8'));
+      if (data.domains && data.ddd) {
+        return {
+          domainsCompleted: data.domains.completed || 0,
+          totalDomains: data.domains.total || 5,
+          dddProgress: data.ddd.progress || 0,
+          patternsLearned: data.learning?.patternsLearned || learning.patterns,
+          sessionsCompleted: data.learning?.sessionsCompleted || learning.sessions
+        };
+      }
+    } catch (e) {
+      // Fall through to pattern-based calculation
+    }
+  }
+
   // DDD progress based on actual learned patterns
   // New install: 0 patterns = 0/5 domains, 0% DDD
   // As patterns grow: 10+ patterns = 1 domain, 50+ = 2, 100+ = 3, 200+ = 4, 500+ = 5
