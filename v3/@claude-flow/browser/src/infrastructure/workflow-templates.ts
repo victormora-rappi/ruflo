@@ -289,11 +289,11 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
       { name: 'requiredElements', type: 'string', required: false, description: 'Comma-separated selectors that must exist' },
     ],
     steps: [
-      { id: 'navigate', action: 'open', target: '${url}', waitAfter: 1000, onError: 'abort' },
-      { id: 'check-title', action: 'get', target: 'title', condition: '${expectedTitle}' },
+      { id: 'navigate', action: 'open', target: '\${url}', waitAfter: 1000, onError: 'abort' },
+      { id: 'check-title', action: 'get', target: 'title', condition: '\${expectedTitle}' },
       { id: 'check-elements', action: 'eval', value: `
         (() => {
-          const selectors = '${requiredElements}'.split(',').map(s => s.trim()).filter(Boolean);
+          const selectors = '\${requiredElements}'.split(',').map(s => s.trim()).filter(Boolean);
           const results = selectors.map(sel => ({
             selector: sel,
             found: document.querySelector(sel) !== null
