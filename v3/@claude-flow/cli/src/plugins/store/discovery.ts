@@ -215,10 +215,10 @@ export class PluginDiscoveryService {
       totalPlugins: plugins.length,
       totalDownloads: plugins.reduce((sum, p) => sum + p.downloads, 0),
       totalAuthors: 1,
-      featured: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant'],
+      featured: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant', '@claude-flow/security', '@claude-flow/claims'],
       trending: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant'],
       newest: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant'],
-      official: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant'],
+      official: ['@claude-flow/plugin-agentic-qe', '@claude-flow/plugin-prime-radiant', '@claude-flow/security', '@claude-flow/claims'],
       compatibilityMatrix: [
         { pluginId: '@claude-flow/neural', pluginVersion: '3.0.0', claudeFlowVersions: ['3.x'], tested: true },
         { pluginId: '@claude-flow/security', pluginVersion: '3.0.0', claudeFlowVersions: ['3.x'], tested: true },
