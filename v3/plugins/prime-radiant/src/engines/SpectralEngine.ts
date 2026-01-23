@@ -99,7 +99,7 @@ export class SpectralEngine implements ISpectralEngine {
     }
 
     if (n === 0) return [];
-    if (n === 1) return [flat[0]];
+    if (n === 1) return [flat[0] ?? 0];
 
     if (this.wasmModule) {
       // Use WASM for eigenvalue computation
