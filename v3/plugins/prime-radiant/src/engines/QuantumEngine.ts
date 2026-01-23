@@ -453,7 +453,13 @@ export class QuantumEngine implements IQuantumEngine {
         let maxDist = 0;
         for (let i = 0; i < simplex.length; i++) {
           for (let j = i + 1; j < simplex.length; j++) {
-            const dist = this.euclideanDistance(points[simplex[i]], points[simplex[j]]);
+            const si = simplex[i];
+            const sj = simplex[j];
+            if (si === undefined || sj === undefined) continue;
+            const pi = points[si];
+            const pj = points[sj];
+            if (!pi || !pj) continue;
+            const dist = this.euclideanDistance(pi, pj);
             maxDist = Math.max(maxDist, dist);
           }
         }
