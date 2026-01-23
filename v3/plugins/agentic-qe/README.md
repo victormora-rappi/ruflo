@@ -1,190 +1,282 @@
 # @claude-flow/plugin-agentic-qe
 
-Quality Engineering plugin providing 58 specialized AI agents across 13 DDD bounded contexts for comprehensive automated testing, quality assessment, and continuous validation.
+**AI-powered quality engineering that writes tests, finds bugs, and breaks things (safely) so your users don't have to.**
 
----
+## What is this?
+
+This plugin adds 58 AI agents to Claude Flow that handle all aspects of software quality:
+
+- **Write tests for you** - Unit tests, integration tests, E2E tests, even chaos tests
+- **Find coverage gaps** - Shows exactly which code paths aren't tested
+- **Predict bugs before they happen** - ML-based defect prediction from code patterns
+- **Security scanning** - Find vulnerabilities, secrets, and compliance issues
+- **Break things on purpose** - Chaos engineering to test resilience (safely!)
+
+Think of it as having a team of QA engineers who never sleep, never miss edge cases, and learn from every bug they find.
 
 ## Installation
 
 ```bash
-# Install from npm
 npm install @claude-flow/plugin-agentic-qe
-
-# Or register with Claude Flow CLI
-npx claude-flow@v3alpha plugins install @claude-flow/plugin-agentic-qe
 ```
 
-## Features
+---
 
-### 58 QE Agents Across 13 Bounded Contexts
+## Practical Examples
 
-| Context | Agents | Description |
-|---------|--------|-------------|
-| **test-generation** | 12 | AI-powered test creation (unit, integration, E2E, property, mutation, fuzz, etc.) |
-| **test-execution** | 8 | Parallel execution, retry, flaky detection, reporting |
-| **coverage-analysis** | 6 | O(log n) gap detection with Johnson-Lindenstrauss |
-| **quality-assessment** | 5 | Quality gates, readiness decisions, risk calculation |
-| **defect-intelligence** | 4 | ML-based prediction, root cause analysis |
-| **requirements-validation** | 3 | BDD validation, testability analysis |
-| **code-intelligence** | 5 | Knowledge graph, semantic search |
-| **security-compliance** | 4 | SAST, DAST, compliance auditing |
-| **contract-testing** | 3 | OpenAPI, GraphQL, gRPC validation |
-| **visual-accessibility** | 3 | Visual regression, WCAG compliance |
-| **chaos-resilience** | 4 | Chaos engineering, load testing |
-| **learning-optimization** | 2 | Cross-domain transfer learning |
+### 🟢 Basic: Generate Unit Tests
 
-### 7 TDD Subagents (London-Style)
-
-1. `requirement-analyzer` - Analyzes requirements for testability
-2. `test-designer` - Designs test structure and assertions
-3. `red-phase-executor` - Executes failing test phase
-4. `green-phase-implementer` - Implements minimal passing code
-5. `refactor-advisor` - Suggests refactoring improvements
-6. `coverage-verifier` - Verifies coverage targets met
-7. `cycle-coordinator` - Orchestrates the TDD cycle
-
-### Key Technologies
-
-- **ReasoningBank Learning**: HNSW-indexed pattern storage with Dream cycles
-- **TinyDancer Model Routing**: 3-tier routing aligned with ADR-026
-- **Queen Coordinator**: Hierarchical orchestration with Byzantine tolerance
-- **O(log n) Coverage Analysis**: Johnson-Lindenstrauss projected gap detection
-- **Browser Automation**: @claude-flow/browser integration for E2E
-
-## Quick Start
-
-### Generate Tests
+The simplest use case - point it at a file and get tests:
 
 ```bash
-# Via CLI
-npx @claude-flow/cli@v3alpha mcp call aqe/generate-tests \
-  --targetPath ./src/auth.ts \
+npx claude-flow@v3alpha mcp call aqe/generate-tests \
+  --targetPath ./src/utils/calculator.ts \
   --testType unit \
   --framework vitest
-
-# Via MCP Tool
-{
-  "name": "aqe/generate-tests",
-  "params": {
-    "targetPath": "./src/auth.ts",
-    "testType": "unit",
-    "framework": "vitest",
-    "coverage": {
-      "target": 80,
-      "focusGaps": true
-    }
-  }
-}
 ```
 
-### Run TDD Cycle
+**What you get:**
+```typescript
+// Generated: calculator.test.ts
+describe('Calculator', () => {
+  it('should add two numbers', () => {
+    expect(add(2, 3)).toBe(5);
+  });
+
+  it('should handle negative numbers', () => {
+    expect(add(-1, 5)).toBe(4);
+  });
+
+  it('should handle decimal precision', () => {
+    expect(add(0.1, 0.2)).toBeCloseTo(0.3);
+  });
+});
+```
+
+### 🟡 Intermediate: TDD Workflow
+
+Give it a requirement, and it runs the full red-green-refactor cycle:
 
 ```bash
-npx @claude-flow/cli@v3alpha mcp call aqe/tdd-cycle \
-  --requirement "User can login with email/password" \
+npx claude-flow@v3alpha mcp call aqe/tdd-cycle \
+  --requirement "Users can reset their password via email" \
   --targetPath ./src/auth \
   --style london
 ```
 
-### Analyze Coverage
+**What happens:**
+1. Writes failing tests for password reset
+2. Implements minimal code to pass
+3. Refactors for clean code
+4. Verifies 100% coverage of the requirement
+
+### 🟡 Intermediate: Find Security Issues
+
+Scan your code for vulnerabilities:
 
 ```bash
-npx @claude-flow/cli@v3alpha mcp call aqe/analyze-coverage \
-  --coverageReport ./coverage/lcov.info \
-  --targetPath ./src \
-  --algorithm johnson-lindenstrauss
-```
-
-### Security Scan
-
-```bash
-npx @claude-flow/cli@v3alpha mcp call aqe/security-scan \
+npx claude-flow@v3alpha mcp call aqe/security-scan \
   --targetPath ./src \
   --scanType sast \
-  --compliance owasp-top-10,sans-25
+  --compliance owasp-top-10
 ```
 
-### Chaos Engineering
+**Output:**
+```json
+{
+  "vulnerabilities": [
+    {
+      "severity": "high",
+      "type": "SQL Injection",
+      "file": "src/db/queries.ts",
+      "line": 42,
+      "fix": "Use parameterized queries instead of string concatenation"
+    }
+  ],
+  "compliance": {
+    "owasp-top-10": { "passed": 8, "failed": 2 }
+  }
+}
+```
+
+### 🟠 Advanced: Quality Gates for CI/CD
+
+Block releases that don't meet quality standards:
+
+```typescript
+const evaluation = await mcp.call('aqe/evaluate-quality-gate', {
+  gates: [
+    { metric: 'line_coverage', operator: '>=', threshold: 80 },
+    { metric: 'test_pass_rate', operator: '==', threshold: 100 },
+    { metric: 'security_vulnerabilities', operator: '==', threshold: 0 },
+    { metric: 'accessibility_violations', operator: '<=', threshold: 5 }
+  ]
+});
+
+if (!evaluation.passed) {
+  console.log('Release blocked:', evaluation.failedCriteria);
+  process.exit(1);
+}
+```
+
+### 🟠 Advanced: Predict Bugs Before They Ship
+
+Use ML to find likely defects:
 
 ```bash
-npx @claude-flow/cli@v3alpha mcp call aqe/chaos-inject \
-  --target my-service \
+npx claude-flow@v3alpha mcp call aqe/predict-defects \
+  --targetPath ./src/checkout \
+  --includeRootCause true
+```
+
+**Output:**
+```json
+{
+  "predictions": [
+    {
+      "file": "src/checkout/payment.ts",
+      "probability": 0.78,
+      "reason": "High cyclomatic complexity + recent churn + no error handling for network failures",
+      "suggestedTests": ["network timeout", "partial payment failure", "currency conversion edge cases"]
+    }
+  ]
+}
+```
+
+### 🔴 Expert: Chaos Engineering
+
+Test how your system handles failures. **Always use dryRun first!**
+
+```bash
+# Step 1: Preview what would happen (safe)
+npx claude-flow@v3alpha mcp call aqe/chaos-inject \
+  --target payment-service \
   --failureType network-latency \
   --duration 30 \
   --intensity 0.5 \
-  --dryRun true  # Always use dryRun first!
+  --dryRun true
+
+# Step 2: Run the actual experiment
+npx claude-flow@v3alpha mcp call aqe/chaos-inject \
+  --target payment-service \
+  --failureType network-latency \
+  --duration 30 \
+  --intensity 0.5 \
+  --dryRun false
 ```
 
-## MCP Tools Reference
+**Failure types available:**
+- `network-latency` - Add delays to network calls
+- `network-partition` - Isolate services from each other
+- `cpu-stress` - Simulate high CPU load
+- `memory-pressure` - Simulate memory exhaustion
+- `disk-failure` - Simulate storage issues
+- `process-kill` - Randomly kill processes
+- `dns-failure` - Break DNS resolution
 
-### Test Generation Tools
+### 🔴 Expert: Visual Regression Testing
 
-| Tool | Description |
-|------|-------------|
-| `aqe/generate-tests` | Generate tests with AI-powered analysis |
-| `aqe/tdd-cycle` | Execute TDD red-green-refactor cycle |
-| `aqe/suggest-tests` | Get test suggestions for coverage gaps |
+Catch UI changes automatically:
 
-### Coverage Tools
+```typescript
+// Compare against baseline
+const result = await mcp.call('aqe/visual-regression', {
+  targetUrl: 'http://localhost:3000',
+  viewports: [
+    { width: 1920, height: 1080 },  // Desktop
+    { width: 768, height: 1024 },   // Tablet
+    { width: 375, height: 812 }     // Mobile
+  ],
+  threshold: 0.1  // 10% difference allowed
+});
 
-| Tool | Description |
-|------|-------------|
-| `aqe/analyze-coverage` | Analyze coverage with O(log n) gap detection |
-| `aqe/prioritize-gaps` | Prioritize gaps by risk score |
-| `aqe/track-trends` | Track coverage trends over time |
+if (result.hasRegressions) {
+  console.log('Visual changes detected:', result.diffs);
+}
+```
 
-### Quality Tools
+### 🟣 Exotic: Full Automated QA Pipeline
 
-| Tool | Description |
-|------|-------------|
-| `aqe/evaluate-quality-gate` | Evaluate quality gates |
-| `aqe/assess-readiness` | Determine release readiness |
-| `aqe/calculate-risk` | Calculate quality risk score |
+Combine everything for comprehensive quality assurance:
 
-### Defect Intelligence Tools
+```typescript
+// 1. Generate tests for uncovered code
+const tests = await mcp.call('aqe/generate-tests', {
+  targetPath: './src',
+  coverage: { target: 90, focusGaps: true }
+});
 
-| Tool | Description |
-|------|-------------|
-| `aqe/predict-defects` | Predict potential defects |
-| `aqe/analyze-root-cause` | Analyze defect root cause |
-| `aqe/find-similar-defects` | Find similar historical defects |
+// 2. Run security scan
+const security = await mcp.call('aqe/security-scan', {
+  targetPath: './src',
+  scanType: 'sast',
+  compliance: ['owasp-top-10', 'sans-25']
+});
 
-### Security Tools
+// 3. Check accessibility
+const a11y = await mcp.call('aqe/check-accessibility', {
+  targetUrl: 'http://localhost:3000',
+  standard: 'WCAG21-AA'
+});
 
-| Tool | Description |
-|------|-------------|
-| `aqe/security-scan` | Run SAST/DAST scans |
-| `aqe/audit-compliance` | Generate compliance report |
-| `aqe/detect-secrets` | Detect hardcoded secrets |
+// 4. Predict defects
+const defects = await mcp.call('aqe/predict-defects', {
+  targetPath: './src'
+});
 
-### Contract Testing Tools
+// 5. Assess release readiness
+const readiness = await mcp.call('aqe/assess-readiness', {
+  criteria: [
+    { name: 'coverage', required: true },
+    { name: 'security', required: true },
+    { name: 'accessibility', required: false }
+  ]
+});
 
-| Tool | Description |
-|------|-------------|
-| `aqe/validate-contract` | Validate API contracts |
-| `aqe/compare-contracts` | Compare contract versions |
-| `aqe/generate-contract-tests` | Generate contract tests |
+console.log('Ready to ship:', readiness.approved);
+```
 
-### Visual/Accessibility Tools
+### 🟣 Exotic: Self-Learning Test Patterns
 
-| Tool | Description |
-|------|-------------|
-| `aqe/visual-regression` | Detect visual regressions |
-| `aqe/check-accessibility` | Check WCAG compliance |
-| `aqe/update-baseline` | Update visual baselines |
+The plugin learns from your codebase and improves over time:
 
-### Chaos Engineering Tools
+```typescript
+// The plugin stores patterns in memory
+// After running on your codebase, it learns:
+// - Your testing style and conventions
+// - Common edge cases in your domain
+// - Patterns that historically caused bugs
 
-| Tool | Description |
-|------|-------------|
-| `aqe/chaos-inject` | Inject chaos failures |
-| `aqe/assess-resilience` | Assess system resilience |
-| `aqe/load-test` | Run load tests |
-| `aqe/validate-recovery` | Validate recovery procedures |
+// Query learned patterns
+const patterns = await mcp.call('aqe/suggest-tests', {
+  targetPath: './src/new-feature.ts',
+  useLearned: true  // Use patterns learned from your codebase
+});
+
+// Patterns are stored in:
+// - aqe/v3/test-patterns (test generation)
+// - aqe/v3/defect-patterns (bug prediction)
+// - aqe/v3/learning-trajectories (improvement over time)
+```
+
+---
+
+## Available Tools
+
+| Category | Tools | What They Do |
+|----------|-------|--------------|
+| **Test Generation** | `generate-tests`, `tdd-cycle`, `suggest-tests` | Write tests automatically |
+| **Coverage** | `analyze-coverage`, `prioritize-gaps`, `track-trends` | Find untested code |
+| **Quality** | `evaluate-quality-gate`, `assess-readiness`, `calculate-risk` | Release decisions |
+| **Defects** | `predict-defects`, `analyze-root-cause`, `find-similar-defects` | Bug prediction |
+| **Security** | `security-scan`, `audit-compliance`, `detect-secrets` | Vulnerability scanning |
+| **Contracts** | `validate-contract`, `compare-contracts` | API validation |
+| **Visual** | `visual-regression`, `check-accessibility` | UI testing |
+| **Chaos** | `chaos-inject`, `assess-resilience`, `load-test` | Resilience testing |
+
+---
 
 ## Configuration
-
-### Plugin Configuration
 
 ```yaml
 # claude-flow.config.yaml
@@ -192,187 +284,23 @@ plugins:
   agentic-qe:
     enabled: true
     config:
-      # Test generation
       defaultFramework: vitest
-      defaultTestType: unit
       coverageTarget: 80
-
-      # TDD
       tddStyle: london
-      maxTddCycles: 10
-
-      # Security
       complianceStandards:
         - owasp-top-10
         - sans-25
-
-      # Model routing
-      preferCost: false
-      preferQuality: true
-
-      # Sandbox
-      maxExecutionTime: 30000
-      memoryLimit: 536870912
 ```
 
-### Memory Namespaces
+---
 
-All QE data is stored under the `aqe/v3/` namespace:
+## Safety
 
-| Namespace | Purpose | TTL |
-|-----------|---------|-----|
-| `aqe/v3/test-patterns` | Learned test generation patterns | Permanent |
-| `aqe/v3/coverage-data` | Coverage analysis results | 24h |
-| `aqe/v3/defect-patterns` | Defect intelligence data | Permanent |
-| `aqe/v3/code-knowledge` | Code knowledge graph | Permanent |
-| `aqe/v3/security-findings` | Security scan findings | Permanent |
-| `aqe/v3/contracts` | API contract definitions | Permanent |
-| `aqe/v3/visual-baselines` | Visual regression baselines | Permanent |
-| `aqe/v3/chaos-experiments` | Chaos experiment results | 7 days |
-| `aqe/v3/learning-trajectories` | ReasoningBank trajectories | Permanent |
+- **Chaos operations default to dry-run mode** - Nothing breaks until you explicitly confirm
+- **All code runs in a sandbox** - 30s timeout, 512MB memory limit, no network access
+- **Production targets are blocked** - Can't accidentally chaos-test production
 
-## V3 Integration
-
-### Model Routing (ADR-026 Alignment)
-
-The plugin's TinyDancer routing aligns with V3's Agent Booster routing:
-
-| Tier | Handler | QE Use Cases | Latency | Cost |
-|------|---------|--------------|---------|------|
-| 1 | Agent Booster | Add imports, assertions | <1ms | $0 |
-| 2 | Haiku | Unit test generation | ~500ms | $0.0002 |
-| 2 | Sonnet | Integration tests, contracts | ~2s | $0.003 |
-| 3 | Opus | E2E tests, security audits, chaos design | ~5s | $0.015 |
-
-### Memory Integration (Shared Kernel)
-
-QE uses V3's memory infrastructure:
-- **AgentDB**: Vector storage for patterns
-- **HNSW**: 150x faster similarity search
-- **Embeddings**: Shared ONNX model (75x faster)
-- **ReasoningBank**: Learning trajectory storage
-
-### Security Integration (Conformist)
-
-QE adapts to V3's security module:
-- **PathValidator**: Validates scan targets
-- **SafeExecutor**: Executes probes safely
-- **TokenGenerator**: Signs audit entries
-- **InputValidator**: PII detection patterns
-
-### Coordination Integration (Shared Kernel)
-
-QE's Queen Coordinator integrates with Hive Mind:
-- Queen joins as specialized coordinator role
-- Workers join with QE capabilities
-- Consensus for agent allocation
-- Broadcast for result distribution
-
-## Examples
-
-### Full Test Suite Generation
-
-```typescript
-import { PLUGIN_METADATA, TOTAL_AGENT_COUNT, CONTEXT_AGENT_COUNTS } from '@claude-flow/plugin-agentic-qe';
-
-console.log(PLUGIN_METADATA.name);       // "agentic-qe"
-console.log(TOTAL_AGENT_COUNT);          // 58
-console.log(Object.keys(CONTEXT_AGENT_COUNTS).length); // 13 contexts
-
-// Generate comprehensive test suite
-const result = await mcp.call('aqe/generate-tests', {
-  targetPath: './src',
-  testType: 'integration',
-  framework: 'vitest',
-  coverage: {
-    target: 80,
-    focusGaps: true
-  },
-  style: 'tdd-london'
-});
-
-console.log(result.tests);
-```
-
-### Quality Gate Workflow
-
-```typescript
-// Evaluate multiple quality gates
-const evaluation = await mcp.call('aqe/evaluate-quality-gate', {
-  gates: [
-    { metric: 'line_coverage', operator: '>=', threshold: 80 },
-    { metric: 'test_pass_rate', operator: '==', threshold: 100 },
-    { metric: 'security_vulnerabilities', operator: '==', threshold: 0 },
-    { metric: 'accessibility_violations', operator: '<=', threshold: 5 }
-  ],
-  defaults: 'standard'
-});
-
-if (!evaluation.passed) {
-  console.log('Failed criteria:', evaluation.failedCriteria);
-  process.exit(1);
-}
-```
-
-### Chaos Experiment
-
-```typescript
-// Design and execute chaos experiment
-const experiment = await mcp.call('aqe/chaos-inject', {
-  target: 'payment-service',
-  failureType: 'network-latency',
-  duration: 60,
-  intensity: 0.3,
-  dryRun: false  // Execute real chaos
-});
-
-// Assess resilience
-const assessment = await mcp.call('aqe/assess-resilience', {
-  experimentId: experiment.id
-});
-
-console.log('Resilience score:', assessment.score);
-console.log('Recovery time:', assessment.recoveryMetrics.recoveryTime);
-```
-
-## Performance
-
-| Metric | Target | Actual |
-|--------|--------|--------|
-| Test generation | <2s | ~1.5s |
-| Coverage analysis | O(log n) | O(log n) |
-| Quality gate eval | <500ms | ~300ms |
-| Security scan/KLOC | <10s | ~8s |
-| MCP response | <100ms | ~50ms |
-| Memory per context | <50MB | ~35MB |
-
-## Security Considerations
-
-### Sandbox Execution
-
-All test code runs in a security sandbox:
-- **Timeout**: 30s max execution time
-- **Memory**: 512MB limit
-- **Network**: Restricted (localhost only)
-- **Filesystem**: Workspace-only access
-
-### Critical Operations
-
-Chaos injection and DAST scanning require explicit confirmation:
-```typescript
-// Always test with dryRun first
-await mcp.call('aqe/chaos-inject', {
-  target: 'service',
-  failureType: 'network-partition',
-  dryRun: true  // Preview before executing
-});
-```
-
-## Documentation
-
-- [Domain Model](https://github.com/ruvnet/claude-flow/blob/main/v3/docs/ddd/quality-engineering/domain-model.md)
-- [Integration Points](https://github.com/ruvnet/claude-flow/blob/main/v3/docs/ddd/quality-engineering/integration-points.md)
-- [ADR-030: Agentic-QE Integration](https://github.com/ruvnet/claude-flow/blob/main/v3/implementation/adrs/ADR-030-agentic-qe-integration.md)
+---
 
 ## License
 
