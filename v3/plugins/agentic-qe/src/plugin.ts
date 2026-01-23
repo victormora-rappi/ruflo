@@ -7,31 +7,18 @@
  */
 
 import type {
-  ComponentHealth,
-  IContextMapper,
-  IPlugin,
-  IPluginContext,
-  IPluginRegistry,
   IQECoreBridge,
   IQEHiveBridge,
   IQEMemoryBridge,
   IQEModelRoutingAdapter,
   IQESecurityBridge,
-  ISecuritySandbox,
-  IMCPTool,
-  MCPToolResult,
-  PluginHealthStatus,
-  QEHookDefinition,
-  QEWorkerDefinition,
-  QEAgentDefinition,
+  QEPluginContext,
 } from './interfaces.js';
 
 import type {
   AQEPluginConfig,
   BoundedContext,
   ContextMapping,
-  HNSWConfig,
-  ModelTier,
   QEMemoryNamespace,
   SecurityLevel,
   V3Domain,
@@ -41,6 +28,166 @@ import {
   PluginConfigSchema,
   parseWithDefaults,
 } from './schemas.js';
+
+// =============================================================================
+// Local Interface Definitions (for plugin system integration)
+// =============================================================================
+
+/**
+ * Plugin interface for V3 plugin system
+ */
+interface IPlugin {
+  readonly name: string;
+  readonly version: string;
+  readonly description: string;
+  readonly author: string;
+  readonly capabilities: readonly string[];
+  register(registry: IPluginRegistry): Promise<void>;
+  initialize(context: IPluginContext): Promise<void>;
+  shutdown(): Promise<void>;
+  getHealth(): Promise<PluginHealthStatus>;
+}
+
+/**
+ * Plugin registry for tool/hook/worker registration
+ */
+interface IPluginRegistry {
+  registerTool(tool: IMCPTool): void;
+  registerHook(hook: QEHookDefinition): void;
+  registerWorker(worker: QEWorkerDefinition): void;
+  registerAgent(agent: QEAgentDefinition): void;
+}
+
+/**
+ * Plugin context with V3 services
+ */
+interface IPluginContext {
+  services: {
+    memory?: unknown;
+    security?: unknown;
+    embeddings?: unknown;
+    modelRouter?: unknown;
+    hiveMind?: unknown;
+    ui?: unknown;
+  };
+  config: Record<string, unknown>;
+  logger: {
+    debug(message: string, ...args: unknown[]): void;
+    info(message: string, ...args: unknown[]): void;
+    warn(message: string, ...args: unknown[]): void;
+    error(message: string, ...args: unknown[]): void;
+  };
+}
+
+/**
+ * MCP tool interface
+ */
+interface IMCPTool {
+  name: string;
+  description: string;
+  inputSchema: Record<string, unknown>;
+  execute(input: unknown, context: QEPluginContext): Promise<MCPToolResult>;
+}
+
+/**
+ * MCP tool result
+ */
+interface MCPToolResult {
+  success: boolean;
+  data?: unknown;
+  error?: string;
+}
+
+/**
+ * Plugin health status
+ */
+interface PluginHealthStatus {
+  healthy: boolean;
+  components: ComponentHealth[];
+  lastCheck: number;
+  uptime: number;
+}
+
+/**
+ * Component health
+ */
+interface ComponentHealth {
+  name: string;
+  healthy: boolean;
+  message?: string;
+  lastCheck: number;
+}
+
+/**
+ * Hook definition
+ */
+interface QEHookDefinition {
+  name: string;
+  event: string;
+  priority: 'low' | 'normal' | 'high' | 'critical';
+  handler: (context: QEPluginContext, data: unknown) => Promise<void>;
+}
+
+/**
+ * Worker definition
+ */
+interface QEWorkerDefinition {
+  name: string;
+  type: string;
+  handler: (context: QEPluginContext, input: unknown) => Promise<unknown>;
+}
+
+/**
+ * Agent definition
+ */
+interface QEAgentDefinition {
+  id: string;
+  type: string;
+  context: string;
+  capabilities: string[];
+}
+
+/**
+ * Context mapper interface
+ */
+interface IContextMapper {
+  mapToV3Domain(context: BoundedContext): V3Domain[];
+  getAgentsForContext(context: BoundedContext): string[];
+  getMemoryNamespace(context: BoundedContext): string;
+  getSecurityLevel(context: BoundedContext): SecurityLevel;
+}
+
+/**
+ * Security sandbox interface
+ */
+interface ISecuritySandbox {
+  execute<T>(fn: () => Promise<T>, options: SandboxExecutionOptions): Promise<SandboxResult<T>>;
+  validatePath(path: string): boolean;
+  getResourceUsage(): ResourceUsage;
+}
+
+interface SandboxExecutionOptions {
+  timeout: number;
+  maxMemory: number;
+  allowNetwork: boolean;
+  allowFileSystem: boolean;
+  workingDirectory?: string;
+}
+
+interface SandboxResult<T> {
+  success: boolean;
+  result?: T;
+  error?: string;
+  resourceUsage: ResourceUsage;
+  durationMs: number;
+}
+
+interface ResourceUsage {
+  memoryBytes: number;
+  cpuMs: number;
+  networkRequests: number;
+  fileOperations: number;
+}
 
 // =============================================================================
 // Constants
