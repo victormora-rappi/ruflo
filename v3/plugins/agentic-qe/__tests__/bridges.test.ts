@@ -290,7 +290,7 @@ class MockQEHiveBridge {
     const ratio = votes.length > 0 ? accepts / votes.length : 0;
 
     return {
-      achieved: ratio >= 0.67, // 2/3 majority
+      achieved: ratio >= 2/3, // Exact 2/3 majority calculation
       ratio,
     };
   }
