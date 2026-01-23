@@ -41,10 +41,13 @@ function computeSimilarityMatrix(embeddings: number[][]): number[][] {
   const matrix: number[][] = [];
 
   for (let i = 0; i < n; i++) {
-    matrix[i] = [];
+    const row: number[] = [];
+    const embi = embeddings[i]!;
     for (let j = 0; j < n; j++) {
-      matrix[i][j] = cosineSimilarity(embeddings[i], embeddings[j]);
+      const embj = embeddings[j]!;
+      row.push(cosineSimilarity(embi, embj));
     }
+    matrix.push(row);
   }
 
   return matrix;
