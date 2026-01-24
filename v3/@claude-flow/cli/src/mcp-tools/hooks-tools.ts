@@ -517,7 +517,7 @@ function suggestAgentsForFile(filePath: string): string[] {
 function suggestAgentsForTask(task: string): { agents: string[]; confidence: number } {
   const taskLower = task.toLowerCase();
 
-  for (const [pattern, result] of Object.entries(TASK_PATTERNS)) {
+  for (const [pattern, result] of Object.entries(KEYWORD_PATTERNS)) {
     if (taskLower.includes(pattern)) {
       return result;
     }
