@@ -223,8 +223,19 @@ interface QuantumOptimizerConfig {
 - **Resource Limits**: Strict memory (4GB), CPU (10 min), and iteration (1M) limits prevent DoS attacks
 - **Problem Validation**: Problems are validated for size, connectivity, and coefficient magnitude before processing
 - **Oracle Sandboxing**: Grover search predicates are parsed and interpreted safely - never evaluated with `eval()`
-- **Input Validation**: All inputs validated with Zod schemas
+- **Input Validation**: All inputs validated with Zod schemas with strict type checking
 - **Progress Monitoring**: Long-running optimizations are canceled if no progress is detected
+- **Coefficient Bounds**: Problem coefficients limited to prevent numerical overflow attacks
+
+### WASM Security Constraints
+
+| Constraint | Value | Rationale |
+|------------|-------|-----------|
+| Memory Limit | 4GB max | Handle large optimization problems |
+| CPU Time Limit | 600 seconds (10 min) | Allow complex optimizations |
+| No Network Access | Enforced | Prevent side-channel attacks |
+| Iteration Limit | 1,000,000 | Prevent infinite loops |
+| Progress Threshold | Required improvement per 1000 iterations | Cancel stalled runs |
 
 ### Input Limits
 
