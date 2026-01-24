@@ -537,8 +537,19 @@ export class ConvoyObserver extends EventEmitter {
   stopWatching(convoyId: string): void {
     const watcher = this.watchers.get(convoyId);
     if (watcher) {
-      clearInterval(watcher.timer);
+      clearTimeout(watcher.timer);
       this.watchers.delete(convoyId);
+
+      // Clean up progress emitter
+      const emitter = this.progressEmitters.get(convoyId);
+      if (emitter) {
+        emitter.flush(); // Emit any pending updates
+        this.progressEmitters.delete(convoyId);
+      }
+
+      // Invalidate completion cache for this convoy
+      this.completionCache.delete(convoyId);
+
       this.logger.info('Stopped watching convoy', { convoyId });
     }
   }
