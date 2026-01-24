@@ -137,7 +137,7 @@ flowchart TB
 | **HNSW** | Hierarchical Navigable Small World vector search | 150x-12,500x faster |
 | **ReasoningBank** | Pattern storage with trajectory learning | RETRIEVE→JUDGE→DISTILL |
 | **Hyperbolic** | Poincaré ball embeddings for hierarchical data | Better code relationships |
-| **LoRA/MicroLoRA** | Low-Rank Adaptation for efficient fine-tuning | 128x compression, <5MB |
+| **LoRA/MicroLoRA** | Low-Rank Adaptation for efficient fine-tuning | **<3μs** adaptation, 383k ops/sec |
 | **Int8 Quantization** | Memory-efficient weight storage | 3.92x memory reduction |
 | **9 RL Algorithms** | Q-Learning, SARSA, A2C, PPO, DQN, Decision Transformer, etc. | Task-specific learning |
 
