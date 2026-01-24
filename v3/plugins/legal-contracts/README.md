@@ -309,10 +309,35 @@ Logs are encrypted at rest, accessible only to ethics/compliance, and retained p
 
 ### Input Validation
 
+All inputs are validated using Zod schemas:
 - Maximum document size: 10MB
+- Maximum clause types per request: 20
 - Path traversal prevention on file inputs
 - Malicious content detection (macros, scripts)
-- Character encoding validation
+- Character encoding validation (UTF-8 required)
+- Playbook identifiers: alphanumeric with hyphens, max 64 characters
+
+### WASM Security Constraints
+
+| Constraint | Value | Rationale |
+|------------|-------|-----------|
+| Memory Limit | 2GB max | Handle large contract documents |
+| CPU Time Limit | 120 seconds | Allow complex multi-document comparison |
+| No Network Access | Enforced | Preserve attorney-client privilege |
+| No File System Access | Sandboxed paths only | Prevent unauthorized document access |
+| Per-Matter Isolation | Enforced | Prevent cross-matter data leakage |
+
+### Rate Limiting
+
+```typescript
+const rateLimits = {
+  'legal/clause-extract': { requestsPerMinute: 30, maxConcurrent: 3 },
+  'legal/risk-assess': { requestsPerMinute: 20, maxConcurrent: 2 },
+  'legal/contract-compare': { requestsPerMinute: 10, maxConcurrent: 1 },
+  'legal/obligation-track': { requestsPerMinute: 30, maxConcurrent: 3 },
+  'legal/playbook-match': { requestsPerMinute: 30, maxConcurrent: 3 }
+};
+```
 
 ## Performance
 
