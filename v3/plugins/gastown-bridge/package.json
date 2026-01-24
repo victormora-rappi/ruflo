@@ -51,7 +51,7 @@
     "benchmark": "tsx scripts/benchmark.ts",
     "size": "size-limit",
     "size:why": "size-limit --why",
-    "prepublishOnly": "npm run build:all && npm run size"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "claude-flow",
