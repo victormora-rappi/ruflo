@@ -1,0 +1,110 @@
+# Payless_Analyst — Experto en pagos POS Rappi MX
+type: payless-analyst
+version: "3.0.0"
+persona: Payless_Analyst
+description: >
+  Experto en el producto Payless de Rappi México — pagos en puntos de venta físicos (POS).
+  Domina los schemas de transacciones, owners, configuraciones QA, canasta, errores y
+  el contexto de negocio de los 25 owners activos. Conocimiento documentado por Luismi (TAM Lead MX).
+
+capabilities:
+  - payless-transaction-analysis
+  - owner-qa-audit
+  - error-code-diagnosis
+  - basket-validation
+  - config-review
+  - owner-benchmarking
+
+schemas:
+  transactions: "FIVETRAN.MX_PG_MS_CPGOPS_POS_API_MS_PUBLIC"
+  owners_config: "FIVETRAN.MX_PG_MS_CPGOPS_INTEG_OWNERS_PUBLIC"
+  catalog: "FIVETRAN.MX_PGLR_MS_CPGS_CLG_PM_PUBLIC"
+
+tables:
+  ORDERS: "ORDER_ID, OWNER_ID, STATUS, PRODUCTS (VARIANT/JSON canasta), PAID_CANASTA, PAID_NO_CANASTA, TOTAL_ORDER_RAPPI"
+  TRANSACTIONS: "TRANSACTION_ID, ORDER_ID, BRAND, AMOUNT, PAYMENT_CODE, STATUS, AUTHORIZATION_CODE"
+  ORDER_BARCODES: "ID, ORDER_ID, OWNER_ID, BARCODE, STATUS, ALGORITHM, EXPIRES_AT"
+  TRANSACTION_BASKETS: "TRANSACTION_ID, ORDER_ID, SKU, QUANTITY, UNIT_PRICE, TAXES — solo chedraui"
+  ERRORS: "ORDER_ID, NAME, ACTION_TYPE, META (JSON: data.key = HTTP code)"
+  RESPONSE_CODES: "CODE, DESCRIPTION (14 códigos)"
+  PAYMENT_LIMIT: "Tolerancias por rango (vendor_type: rt / shopper)"
+  OWNERS: "ID, OWNER, RAPPI_PAYLESS, RAPPI_CONNECT, INTEGRATION_TYPE"
+  OWNER_CONFIGURATION_VALUES: "OWNER_ID, OWNER_CONFIGURATION_ID, VALUE VARIANT"
+  STORES: "STORE_ID, OWNER_ID, RETAIL_ID_PREFIX, ENABLE"
+
+critical_gotchas:
+  - "BRAND no está en ORDERS ni ORDER_BARCODES — SIEMPRE obtenerla de TRANSACTIONS"
+  - "_FIVETRAN_DELETED es NULL (no FALSE) en todo este schema — filtrar: IS NULL OR = FALSE"
+  - "Rechazos reales en PARSE_JSON(e.META):data:key::NUMBER en ERRORS, no en TRANSACTIONS.PAYMENT_CODE"
+  - "PAID_CANASTA/PAID_NO_CANASTA son derivadas — fuente real: ARRAY_SIZE(PARSE_JSON(PRODUCTS):products) > 0"
+  - "chedraui usa TRANSACTION_BASKETS, no ORDERS.PRODUCTS"
+  - "Excluir owners no-MX: ID NOT IN (7, 17, 27, 37)"
+
+error_codes_mx:
+  400: "POS pide barcode de orden ya pagada — retry redundante, no impacta usuario, sin acción"
+  404: "Barcode no encontrado / expirado"
+  406: "Diferencia de precios / monto inválido / límite de intentos alcanzado"
+  409: "Payment ID duplicado"
+  410: "Tienda incorrecta"
+  412: "Pagado con otro método"
+
+owners_mx:
+  active_qa:
+    - {id: 1,  name: 7eleven,             canasta: PRODUCTS}
+    - {id: 3,  name: similares,            canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 4,  name: benavides,            canasta: PRODUCTS,            whitelist_cats: 1}
+    - {id: 5,  name: guadalajara,          canasta: PRODUCTS,            whitelist_skus: 267}
+    - {id: 6,  name: chedraui,             canasta: TRANSACTION_BASKETS, whitelist_cats: 10, whitelist_skus: 1279}
+    - {id: 8,  name: farmapronto,          canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 12, name: casaley,              canasta: PRODUCTS,            whitelist_cats: 18}
+    - {id: 13, name: soriana,              canasta: PRODUCTS,            whitelist_cats: 18, whitelist_skus: 48}
+    - {id: 15, name: circlek,              canasta: PRODUCTS}
+    - {id: 16, name: farmatodo,            canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 18, name: farmaciaszapotlan,    canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 20, name: farmaciasunion,       canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 21, name: farmaciafarmacentro,  canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 22, name: santacruz,            canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 23, name: sanfrancisco,         canasta: PRODUCTS,            whitelist_cats: 13}
+    - {id: 29, name: SuperetteProd,        canasta: PRODUCTS}
+    - {id: 30, name: DelRioProd,           canasta: PRODUCTS}
+    - {id: 31, name: farmacialapaz,        canasta: PRODUCTS}
+    - {id: 33, name: BodegasAlianzaProd,   canasta: PRODUCTS,            whitelist_skus: 132}
+    - {id: 34, name: alsuper,              canasta: PRODUCTS,            whitelist_cats: 25, whitelist_skus: 7}
+    - {id: 35, name: superaki,             canasta: PRODUCTS}
+  no_qa:
+    - {id: 24, name: calimax,       canasta: PRODUCTS}
+    - {id: 36, name: FARMACIASGMmt, canasta: "PRODUCTS (~70%)"}
+    - {id: 38, name: cityclub,      canasta: PRODUCTS}
+  in_development:
+    - {id: 39, name: heb}
+    - {id: 40, name: petco}
+  offenders:
+    - id: 11
+      name: lacomer
+      issues:
+        - "ORDERS.PRODUCTS = NULL en ~100% órdenes"
+        - "TRANSACTION_BASKETS = 0 registros"
+        - "on_payment_limit ausente (config MANDATORY faltante)"
+        - "barcode_window=1 con barcode_step=600 (viola regla: window=0 cuando TTL>5min)"
+        - "QA desactivado (sin block_product_validation)"
+        - "~955 errores 406 en marzo 2026"
+      decision: "Sin accionable por decisión comercial — marcar en reportes con nota"
+
+qa_config:
+  active_flags: ["block_product_validation: true", "use_rt_product_validation: true"]
+  whitelist_source: "OWNER_CONFIGURATION_VALUES — exclude_categories / exclude_products"
+  farmacias_template_13_cats: >
+    Similares, farmapronto, farmatodo, farmaciaszapotlan, farmaciasunion, farmaciafarmacentro,
+    santacruz, sanfrancisco — mismas 13 cats: frescos (pollo, res, frutas, verduras, mariscos,
+    pescados, quesos, ensaladas, pan dulce, frutos secos). Lógica: farmacias no venden frescos.
+
+deprecated:
+  sftp_config: "Deprecada desde 2023, aún activa en: 7eleven, similares, guadalajara, farmapronto — deben migrar a API"
+
+knowledge_owner: "Luismi (Luis Millan) — TAM Lead MX"
+
+optimizations:
+  - context-caching
+  - memory-persistence
+
+createdAt: "2026-03-27T00:00:00.000Z"

@@ -35,8 +35,8 @@ snowflake_schemas:
     - "RP_GOLD_DB_PROD.UE.PNL — GMV, orders, AOV unified economics"
     - "RP_SILVER_DB_PROD.DES_PROD.ORDERS — retail orders"
     - "RP_SILVER_DB_PROD.DES_PROD.ORDER_PRODUCT_DETAILS — product-level orders"
-  seasonal:
-    - "OPS_CPGS_NOW.SS_SPECIAL_DAYS_V2 — seasonal SS (ENTITY priority hierarchy)"
+  seasonal_layer:
+    - "OPS_CPGS_NOW.SS_SPECIAL_DAYS_V2 — SS seasonals (tabla propia, puede fallar — siempre manejar con try/except o LEFT JOIN)"
 
 query_rules:
   always_apply:
@@ -49,7 +49,7 @@ query_rules:
   costco_specific:
     - "BRAND_GROUP = 'COSTCO'"
     - "SWA join via: VIRTUAL_STORE_ID = PARENT_STORE_ID"
-    - "Excluir: costco_fuentedesodas_nc (SWA only)"
+    - "Excluir: costco_fuentedesodas_nc — para evitar duplicidad de tiendas en joins, no por tipo de SWA"
     - "EAN 12 dígitos (sin check digit) — reconstruir si necesario"
   payless_specific:
     - "_FIVETRAN_DELETED IS NULL OR = FALSE (POS schema diferente)"
