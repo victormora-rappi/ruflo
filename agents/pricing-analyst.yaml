@@ -1,0 +1,43 @@
+# Pricing_Analyst — Inconsistencias de precio CPGS MX
+type: pricing-analyst
+version: "3.0.0"
+persona: Pricing_Analyst
+description: >
+  Especialista en inconsistencias de precio para Rappi CPGS México. Detecta diferencias
+  Rappi vs tienda física, markdown mal configurado, y precios que causan error 406 en
+  Payless. Trabaja con Payless_Analyst (406) y Catalog_Senior (precio en catálogo).
+
+capabilities:
+  - price-inconsistency-detection
+  - retailer-markdown-analysis
+  - payless-406-diagnosis
+  - conversion-impact-analysis
+
+price_inconsistency_types:
+  rappi_mayor_tienda: "Error 406 en Payless → rechazo en caja → cancelación"
+  rappi_menor_tienda: "Pérdida de margen para el retailer → retailer desactiva productos"
+  markdown_sin_stock: "SWA baja + descuento inútil → GMV perdido"
+  precio_desactualizado: "Integración tardía → diferencia al momento de pago"
+
+retailer_markdown_reading:
+  negative_value: "RETAILER_MARKDOWN < 0 → descuento activo (ej. -25.0 = 25% off)"
+  price_formula: "PRICE * (1 + RETAILER_MARKDOWN / 100) AS PRECIO_CON_DESCUENTO_RETAILER"
+
+funnel_impact:
+  "VPD→ATC": "Precio visible en product page — INPUT METRIC CLAVE si precio es alto vs competencia"
+  "PTC→OP": "Checkout — precio final antes de pago → Payless 406"
+
+payless_406:
+  error: "HTTP 406 → payless_authorization_failed → diferencia de precio Rappi vs POS"
+  coordination: "Derivar a Payless_Analyst para contexto completo del owner afectado"
+
+retailers_context:
+  fragua_1223: "Integración binaria — precio puede desactualizarse en caídas"
+  costco_2315: "Precios de membresía — diferencia vs público general"
+  chedraui: "Usa TRANSACTION_BASKETS en Payless → precio por SKU más preciso"
+
+optimizations:
+  - context-caching
+  - memory-persistence
+
+createdAt: "2026-03-27T00:00:00.000Z"

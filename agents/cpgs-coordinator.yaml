@@ -15,18 +15,38 @@ capabilities:
   - priority-assessment
 
 routing_rules:
-  - trigger: "cobertura|coverage|portafolio|maker|marca"
-    dispatch: [Data_Analyst_Senior, Catalog_Senior, Reporte_Ejecutivo]
-  - trigger: "GMV|ordenes|caída|drop|WoW|semana|ecuación"
-    dispatch: [Data_Analyst_Senior, KAM_Lead, Secretaria, Reporte_Ejecutivo]
-  - trigger: "override|SWA|disponibilidad|stockout|bloqueo"
-    dispatch: [Data_Analyst_Senior, KAM_Lead, Reporte_Ejecutivo]
-  - trigger: "SS|security stock|seasonal|temporada|pascua|navidad"
-    dispatch: [Data_Analyst_Senior, KAM_Lead, Reporte_Ejecutivo]
-  - trigger: "conversión|conversion|PTC|VSO|funnel"
-    dispatch: [Data_Analyst_Senior, KAM_Lead, Secretaria]
-  - trigger: "email|correo|VP|reporte ejecutivo|accionables"
+  - trigger: "GMV|ordenes|caída|drop|WoW|semana|conversión|funnel|crecimiento"
+    dispatch: [Growth_Analyst, Data_Analyst_Senior, KAM_Lead, Reporte_Ejecutivo]
+  - trigger: "SWA|disponibilidad|override|found rate|stockout"
+    dispatch: [Data_Analyst_Senior, Availability_Lead, Reporte_Ejecutivo]
+  - trigger: "SWA|integración|sync|caída integración"
+    dispatch: [Data_Analyst_Senior, Availability_Lead, Integrations_Specialist]
+  - trigger: "NO MATCH|no creados|cobertura|F3|coverage"
+    dispatch: [Data_Analyst_Senior, Coverage_Analyst, Reporte_Ejecutivo]
+  - trigger: "makers coverage|portafolio|monetización|burn|maker|marca"
+    dispatch: [Data_Analyst_Senior, Coverage_Analyst, Availability_Lead]
+  - trigger: "catálogo|EAN|imagen|taxonomía|SKU|duplicado"
+    dispatch: [Data_Analyst_Senior, Catalog_Senior]
+  - trigger: "migración SKU|aguillón|aguillon"
+    dispatch: [Catalog_Senior, Reporte_Ejecutivo]
+  - trigger: "integración caída|archivos sin procesar|SFTP|sync"
+    dispatch: [Integrations_Specialist, Availability_Lead]
+  - trigger: "precio|markdown|inconsistencia precio|RETAILER_MARKDOWN"
+    dispatch: [Data_Analyst_Senior, Pricing_Analyst]
+  - trigger: "payless|POS|owner|barcode|error 406|canasta"
+    dispatch: [Payless_Analyst, Reporte_Ejecutivo]
+  - trigger: "error 406|precio payless"
+    dispatch: [Pricing_Analyst, Payless_Analyst]
+  - trigger: "email|correo VP|reporte ejecutivo|escalación"
     dispatch: [Secretaria]
+  - trigger: "query lento|optimizar SQL|productizar|performance query"
+    dispatch: [Query_Optimizer]
+  - trigger: "health check|semáforo|anomalía|alerta|monitoreo"
+    dispatch: [Monitor_Agent]
+  - trigger: "seasonal|semana santa|buen fin|navidad|día de muertos|SS especial"
+    dispatch: [Seasonal_Planner, Availability_Lead, Ops_Rappi]
+  - trigger: "GRUPO_FINAL|clasificadores ops|override masivo|isma"
+    dispatch: [Ops_Rappi, Availability_Lead]
 
 global_rules:
   - "SIEMPRE filtrar VERTICAL != 'TURBO' (retailer_id 3236, SKUs empiezan con 'vivo')"
@@ -52,6 +72,6 @@ optimizations:
 swarm:
   topology: hierarchical
   consensus: raft
-  max_agents: 6
+  max_agents: 8
 
 createdAt: "2026-03-27T00:00:00.000Z"

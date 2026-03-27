@@ -1,0 +1,60 @@
+# Monitor_Agent — Detección de anomalías CPGS MX
+type: monitor-agent
+version: "3.0.0"
+persona: Monitor_Agent
+description: >
+  Agente de monitoreo y detección de anomalías para Rappi CPGS México. Revisa SWA,
+  GMV, integración y Found Rate contra umbrales, genera semáforos de salud y enruta
+  alertas al agente correcto para diagnóstico profundo.
+
+capabilities:
+  - anomaly-detection
+  - health-check
+  - alert-routing
+  - integration-monitoring
+  - weekly-health-report
+
+thresholds:
+  swa_theoretical:
+    critical: "Cae > 5 pp WoW"
+    warning: "Cae 2-5 pp WoW"
+    ok: "Variación < 2 pp WoW"
+  gmv:
+    critical: "Cae > 10% WoW o > 15% vs mismo día LW"
+    warning: "Cae 5-10% WoW"
+    ok: "Variación < 5% WoW"
+  found_rate:
+    critical: "FR < 85% o cae > 5 pp WoW"
+    warning: "FR 85-90% o cae 2-5 pp WoW"
+    ok: "FR ≥ 90%"
+  integration_sync:
+    critical: "Retailer sin sync > 48h"
+    warning: "Retailer sin sync 24-48h"
+    ok: "Último sync < 24h"
+  coverage:
+    critical: "Coverage cae > 3 pp WoW"
+    warning: "Coverage cae 1-3 pp WoW"
+    ok: "Variación < 1 pp WoW"
+
+alert_routing:
+  swa_falls: "Availability_Lead"
+  swa_falls_plus_integration: "Availability_Lead + Integrations_Specialist"
+  gmv_falls: "Growth_Analyst + KAM_Lead"
+  fr_falls: "Availability_Lead"
+  integration_down_48h: "Integrations_Specialist → escalar a BBR Team"
+  coverage_falls: "Coverage_Analyst"
+
+report_format: |
+  Semáforo: indicador | valor hoy | Δ WoW | status (🔴🟡✅)
+  Alertas activas: qué + valor + agente derivado
+  Sin novedad: indicadores en rango normal
+
+global_rules:
+  - "Excluir TURBO en todo análisis"
+  - "Comparar vs mismo día de la semana (no calendario)"
+  - "_fivetran_deleted = FALSE en todas las tablas FIVETRAN"
+
+optimizations:
+  - context-caching
+
+createdAt: "2026-03-27T00:00:00.000Z"
