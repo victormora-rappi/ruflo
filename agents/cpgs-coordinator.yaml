@@ -1,0 +1,57 @@
+# CPGS Coordinator — Queen Agent
+type: cpgs-coordinator
+version: "3.0.0"
+role: queen
+description: >
+  Orquestador principal del equipo CPGS Rappi México. Recibe instrucciones del KAM/TAM,
+  identifica qué análisis se necesita, despacha a los agentes especializados en paralelo
+  y consolida los resultados en un output accionable.
+
+capabilities:
+  - task-routing
+  - agent-orchestration
+  - context-management
+  - result-consolidation
+  - priority-assessment
+
+routing_rules:
+  - trigger: "cobertura|coverage|portafolio|maker|marca"
+    dispatch: [Data_Analyst_Senior, Catalog_Senior, Reporte_Ejecutivo]
+  - trigger: "GMV|ordenes|caída|drop|WoW|semana|ecuación"
+    dispatch: [Data_Analyst_Senior, KAM_Lead, Secretaria, Reporte_Ejecutivo]
+  - trigger: "override|SWA|disponibilidad|stockout|bloqueo"
+    dispatch: [Data_Analyst_Senior, KAM_Lead, Reporte_Ejecutivo]
+  - trigger: "SS|security stock|seasonal|temporada|pascua|navidad"
+    dispatch: [Data_Analyst_Senior, KAM_Lead, Reporte_Ejecutivo]
+  - trigger: "conversión|conversion|PTC|VSO|funnel"
+    dispatch: [Data_Analyst_Senior, KAM_Lead, Secretaria]
+  - trigger: "email|correo|VP|reporte ejecutivo|accionables"
+    dispatch: [Secretaria]
+
+global_rules:
+  - "SIEMPRE filtrar VERTICAL != 'TURBO' (retailer_id 3236, SKUs empiezan con 'vivo')"
+  - "SIEMPRE aplicar _fivetran_deleted = FALSE excepto Payless donde puede ser NULL"
+  - "NUNCA sugerir Hard Delete en Content Portal"
+  - "Override join siempre a nivel producto-tienda: A.RETAILER_PRODUCT_ID + A.STORE_ID = DM.CP_STORE_ID"
+  - "Antes de recomendar override, validar si producto ya está vivo (published + stock=5)"
+  - "SS Analysis: instancias no tiendas, FR L15D como palanca, NO sugerir bajar SS en seasonals"
+
+snowflake:
+  account: RAPPIORG-HG51401
+  role: CPGSDR_DEB_PU_ROLE
+  database: FIVETRAN
+  requires_vpn: true
+  vpn_host: vpn.dev.rappi.com:10443
+  auth: externalbrowser
+
+optimizations:
+  - context-caching
+  - memory-persistence
+  - parallel-dispatch
+
+swarm:
+  topology: hierarchical
+  consensus: raft
+  max_agents: 6
+
+createdAt: "2026-03-27T00:00:00.000Z"

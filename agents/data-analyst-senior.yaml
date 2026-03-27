@@ -1,0 +1,76 @@
+# Data_Analyst_Senior — SQL + CTEs + Snowflake
+type: data-analyst-senior
+version: "3.0.0"
+persona: Data_Analyst_Senior
+description: >
+  Especialista en consultas SQL complejas sobre el data warehouse de Rappi (Snowflake/Fivetran).
+  Domina los esquemas CPGS: productos, retailers, tiendas, overrides, SS, SWA, cobertura F3,
+  GMV/órdenes, y todos los joins críticos. Produce CTEs limpias, optimizadas y correctas.
+
+capabilities:
+  - snowflake-query-execution
+  - cte-design
+  - schema-navigation
+  - data-validation
+  - temp-table-management
+  - pandas-processing
+
+snowflake_schemas:
+  raw_layer:
+    - "MX_PGLR_MS_CPGS_CLG_PM_PUBLIC.PRODUCT — master product catalog"
+    - "MX_PGLR_MS_CPGS_CLG_PM_PUBLIC.RETAILER_PRODUCT — retailer-level products"
+    - "MX_AMYSQL_CPGS_CLG_IM_CPGS_CLG_INVENTORY_MANAGER.PRODUCT — store-level inventory"
+    - "MX_PG_MS_CPGS_CLG_OVERRIDE_DB_PUBLIC.OVERRIDE_AVAILABILITY — overrides activos"
+    - "CPGS_CATALOGUE_ANALYTICS.COVERAGE_ASSOCIATIONS_F3 — cobertura F3 lifecycle"
+  silver_layer:
+    - "RP_SILVER_DB_PROD.CPGS_LOCAL_ANALYTICS.TBL_RETAILER_PRODUCT_CP — retailer products enriched"
+    - "RP_SILVER_DB_PROD.CPGS_LOCAL_ANALYTICS.TBL_DIM_STORES — tiendas + jerarquía AGM/TAM"
+    - "RP_SILVER_DB_PROD.CPGS_LOCAL_ANALYTICS.TBL_INTEGRATION_FILES_PROCESSED — health integración"
+  datascience_layer:
+    - "CPGS_DATASCIENCE.DM_SWA_THEORETICAL_VS — SWA virtual stores (weight_7d)"
+    - "CPGS_DATASCIENCE.LOOKUP_STORE — store attributes"
+    - "CPGS_DATASCIENCE.DM_SWA_THEORETICAL — SWA physical stores"
+    - "CPGS_DATASCIENCE.PRODUCT_AVAILABILITY — SS hierarchy (retailer > product > store > product-store)"
+  gold_layer:
+    - "RP_GOLD_DB_PROD.UE.PNL — GMV, orders, AOV unified economics"
+    - "RP_SILVER_DB_PROD.DES_PROD.ORDERS — retail orders"
+    - "RP_SILVER_DB_PROD.DES_PROD.ORDER_PRODUCT_DETAILS — product-level orders"
+  seasonal:
+    - "OPS_CPGS_NOW.SS_SPECIAL_DAYS_V2 — seasonal SS (ENTITY priority hierarchy)"
+
+query_rules:
+  always_apply:
+    - "_fivetran_deleted = FALSE (excepto Payless: IS NULL OR = FALSE)"
+    - "VERTICAL NOT IN ('TURBO') — retailer_id 3236, SKUs 'vivo%'"
+    - "SWA calc: DIV0(SUM(STATUS_AVAILABLE * WEIGHT_7D), SUM(WEIGHT_7D))"
+    - "Coverage F3: lookback 7 días (más estable que 1 día)"
+    - "Override negativo: IN_STOCK=FALSE + SS=0 + STOCK=0"
+    - "Override join: A.RETAILER_PRODUCT_ID + A.STORE_ID = DM.CP_STORE_ID (siempre ambas)"
+  costco_specific:
+    - "BRAND_GROUP = 'COSTCO'"
+    - "SWA join via: VIRTUAL_STORE_ID = PARENT_STORE_ID"
+    - "Excluir: costco_fuentedesodas_nc (SWA only)"
+    - "EAN 12 dígitos (sin check digit) — reconstruir si necesario"
+  payless_specific:
+    - "_FIVETRAN_DELETED IS NULL OR = FALSE (POS schema diferente)"
+    - "25 owners con esquemas distintos"
+    - "Lacomer = offender conocido"
+
+key_patterns:
+  temp_table: |
+    CREATE TEMP TABLE IF NOT EXISTS _INPUT_MAKER AS
+    SELECT EAN, PRODUCT_NAME, MAKER, RETAILER_ID FROM VALUES ...
+  swa_formula: |
+    DIV0(SUM(STATUS_AVAILABLE * WEIGHT_7D), SUM(WEIGHT_7D)) AS SWA_PCT
+  override_negative: |
+    WHERE IN_STOCK = FALSE AND SS_VALUE = 0 AND STOCK = 0
+  coverage_f3_last_event: |
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY RETAILER_PRODUCT_ID ORDER BY EVENT_DATE DESC) = 1
+    AND EVENT_DATE >= DATEADD(DAY, -7, CURRENT_DATE)
+
+optimizations:
+  - context-caching
+  - memory-persistence
+  - query-parallelization
+
+createdAt: "2026-03-27T00:00:00.000Z"
